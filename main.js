@@ -70,7 +70,7 @@ function updateCart() {
             <img src="${item.image}" alt="${item.name}">
             <div class="content">
                 <h3>${item.name}</h3>
-                <span class="price">₹${item.price * item.quantity}/-</span>
+                <span class="price">GHS${item.price * item.quantity}/-</span>
                 <div class="quantity">
                     <button onclick="updateQuantity(${index}, -1)">-</button>
                     <span>Qty: ${item.quantity}</span>
@@ -81,7 +81,7 @@ function updateCart() {
         cartContainer.appendChild(box);
     });
 
-    document.querySelector('.total').textContent = `Total: ₹${total}/-`;
+    document.querySelector('.total').textContent = `Total: GHS${total}/-`;
     updateCheckoutSummary();
 }
 
@@ -152,7 +152,7 @@ function updateCheckoutSummary() {
         itemDiv.classList.add('item');
         itemDiv.innerHTML = `
             <span>${item.name} (x${item.quantity})</span>
-            <span>₹${item.price * item.quantity}/-</span>
+            <span>GHS${item.price * item.quantity}/-</span>
         `;
         summaryContainer.appendChild(itemDiv);
     });
@@ -162,12 +162,12 @@ function updateCheckoutSummary() {
 
     let taxDiv = document.createElement('div');
     taxDiv.classList.add('tax');
-    taxDiv.innerHTML = `<span>Tax (10%)</span><span>₹${tax.toFixed(2)}/-</span>`;
+    taxDiv.innerHTML = `<span>Tax (10%)</span><span>GHS${tax.toFixed(2)}/-</span>`;
     summaryContainer.appendChild(taxDiv);
 
     let totalDiv = document.createElement('div');
     totalDiv.classList.add('total');
-    totalDiv.innerHTML = `<span>Total</span><span>₹${total.toFixed(2)}/-</span>`;
+    totalDiv.innerHTML = `<span>Total</span><span>GHS${total.toFixed(2)}/-</span>`;
     summaryContainer.appendChild(totalDiv);
 }
 
