@@ -7,55 +7,6 @@ let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 let lastScrollTop = 0;
 let additionalProductsVisible = false;
 
-document.querySelector('#cart-btn').onclick = () => {
-    shoppingCart.classList.toggle('active');
-    account.classList.remove('active');
-    navbar.classList.remove('active');
-    updateCart();
-};
-
-document.querySelector('#login-btn').onclick = () => {
-    account.classList.toggle('active');
-    shoppingCart.classList.remove('active');
-    navbar.classList.remove('active');
-};
-
-document.querySelector('#menu-btn').onclick = () => {
-    navbar.classList.toggle('active');
-    shoppingCart.classList.remove('active');
-    account.classList.remove('active');
-};
-
-window.onscroll = () => {
-    shoppingCart.classList.remove('active');
-    account.classList.remove('active');
-    navbar.classList.remove('active');
-
-    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-    if (currentScroll > lastScrollTop) {
-        header.classList.add('hidden');
-    } else {
-        header.classList.remove('hidden');
-    }
-    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-};
-
-document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.onclick = () => {
-        let item = JSON.parse(button.getAttribute('data-item'));
-        let existingItem = cartItems.find(cartItem => cartItem.name === item.name);
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            item.quantity = 1;
-            cartItems.push(item);
-        }
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-        showPopup();
-        updateCart();
-    };
-});
-
 function updateCart() {
     let cartContainer = document.querySelector('.cart-items');
     cartContainer.innerHTML = '';
@@ -102,14 +53,19 @@ function updateQuantity(index, change) {
 
 function showPopup() {
     let popup = document.querySelector('#cart-popup');
-    popup.classList.add('active');
-    setTimeout(() => {
-        popup.classList.remove('active');
-    }, 2000);
+    if (popup) {
+        popup.classList.add('active');
+        setTimeout(() => {
+            popup.classList.remove('active');
+        }, 2000);
+    }
 }
 
 function closePopup() {
-    document.querySelector('#cart-popup').classList.remove('active');
+    let popup = document.querySelector('#cart-popup');
+    if (popup) {
+        popup.classList.remove('active');
+    }
 }
 
 function showSuccessPopup() {
@@ -128,24 +84,24 @@ function showSuccessPopup() {
     }, 2000);
 }
 
-document.querySelector('#search-box').oninput = (e) => {
-    let searchTerm = e.target.value.toLowerCase();
-    document.querySelectorAll('.product-slider .box').forEach(box => {
-        let itemName = box.getAttribute('data-name').toLowerCase();
-        if (searchTerm === '' || itemName.includes(searchTerm)) {
-            box.classList.remove('hidden');
-        } else {
-            box.classList.add('hidden');
-        }
-    });
-};
-
 function updateCheckoutSummary() {
     let summaryContainer = document.querySelector('.order-summary');
-    if (!summaryContainer) return;
+    if (!summaryContainer) {
+        console.log('Order summary container not found');
+        return;
+    }
+    console.log('Cart items:', cartItems); // Debug cart items
     summaryContainer.innerHTML = '';
-    let subtotal = 0;
 
+    if (cartItems.length === 0) {
+        let emptyMessage = document.createElement('div');
+        emptyMessage.classList.add('item');
+        emptyMessage.innerHTML = `<span>Your cart is empty</span>`;
+        summaryContainer.appendChild(emptyMessage);
+        return;
+    }
+
+    let subtotal = 0;
     cartItems.forEach(item => {
         subtotal += item.price * item.quantity;
         let itemDiv = document.createElement('div');
@@ -200,12 +156,107 @@ function placeOrder() {
     }, 1500);
 }
 
-document.querySelector('#view-more-btn').onclick = () => {
-    additionalProductsVisible = !additionalProductsVisible;
-    document.querySelectorAll('.additional-product').forEach(product => {
-        product.classList.toggle('visible', additionalProductsVisible);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing cart and checkout summary');
+
+    // Initialize event listeners
+    const cartBtn = document.querySelector('#cart-btn');
+    if (cartBtn) {
+        cartBtn.onclick = () => {
+            shoppingCart.classList.toggle('active');
+            account.classList.remove('active');
+            navbar.classList.remove('active');
+            updateCart();
+        };
+    } else {
+        console.log('Cart button (#cart-btn) not found');
+    }
+
+    const loginBtn = document.querySelector('#login-btn');
+    if (loginBtn) {
+        loginBtn.onclick = () => {
+            account.classList.toggle('active');
+            shoppingCart.classList.remove('active');
+            navbar.classList.remove('active');
+        };
+    } else {
+        console.log('Login button (#login-btn) not found');
+    }
+
+    const menuBtn = document.querySelector('#menu-btn');
+    if (menuBtn) {
+        menuBtn.onclick = () => {
+            navbar.classList.toggle('active');
+            shoppingCart.classList.remove('active');
+            account.classList.remove('active');
+        };
+    } else {
+        console.log('Menu button (#menu-btn) not found');
+    }
+
+    const searchBox = document.querySelector('#search-box');
+    if (searchBox) {
+        searchBox.oninput = (e) => {
+            let searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.product-slider .box').forEach(box => {
+                let itemName = box.getAttribute('data-name').toLowerCase();
+                if (searchTerm === '' || itemName.includes(searchTerm)) {
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                }
+            });
+        };
+    } else {
+        console.log('Search box (#search-box) not found');
+    }
+
+    const viewMoreBtn = document.querySelector('#view-more-btn');
+    if (viewMoreBtn) {
+        viewMoreBtn.onclick = () => {
+            additionalProductsVisible = !additionalProductsVisible;
+            document.querySelectorAll('.additional-product').forEach(product => {
+                product.classList.toggle('visible', additionalProductsVisible);
+            });
+            viewMoreBtn.textContent = additionalProductsVisible ? 'View Less' : 'View More';
+        };
+    } else {
+        console.log('View more button (#view-more-btn) not found');
+    }
+
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.onclick = () => {
+            let item = JSON.parse(button.getAttribute('data-item'));
+            let existingItem = cartItems.find(cartItem => cartItem.name === item.name);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                item.quantity = 1;
+                cartItems.push(item);
+            }
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            showPopup();
+            updateCart();
+        };
     });
-    document.querySelector('#view-more-btn').textContent = additionalProductsVisible ? 'View Less' : 'View More';
+
+    // Initialize cart and checkout summary
+    updateCart();
+    updateCheckoutSummary();
+});
+
+window.onscroll = () => {
+    shoppingCart.classList.remove('active');
+    account.classList.remove('active');
+    navbar.classList.remove('active');
+
+    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+    if (currentScroll > lastScrollTop) {
+        header.classList.add('hidden');
+    } else {
+        header.classList.remove('hidden');
+    }
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
 };
 
 var swiper = new Swiper(".product-slider", {
@@ -227,8 +278,3 @@ var swiper = new Swiper(".review-slider", {
         1020: { slidesPerView: 4 }
     }
 });
-
-window.onload = () => {
-    updateCart();
-    updateCheckoutSummary();
-};
