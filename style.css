@@ -388,16 +388,33 @@ a.btn:hover, input.btn:hover, button.btn:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url(./images/bakery-bg.jpg);
+    background: url(./images/hero-bakery.jpg) no-repeat;
     background-position: center;
     background-size: cover;
     padding-top: 17rem;
     padding-bottom: 10rem;
+    position: relative;
+}
+
+.home::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
 }
 
 .home .content {
     text-align: center;
     width: 60rem;
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2rem;
+    border-radius: 0.5rem;
 }
 
 .home .content h3 {
@@ -410,7 +427,7 @@ a.btn:hover, input.btn:hover, button.btn:hover {
 }
 
 .home .content p {
-    color: var(--light-color);
+    color: var(--black);
     font-size: 1.7rem;
     padding: 1rem 0;
     line-height: 1.8;
