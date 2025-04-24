@@ -1,11 +1,43 @@
-let searchForm = document.querySelector('.search-form');
 let shoppingCart = document.querySelector('.shopping-cart');
-let account = document.querySelector('.login-form');
 let navbar = document.querySelector('.navbar');
 let header = document.querySelector('.header');
 let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 let lastScrollTop = 0;
 let additionalProductsVisible = false;
+let currentProduct = null;
+
+const pricingData = {
+    "Wedding Cake": {
+        options: [
+            { label: "2 Tiers", price: 2500 },
+            { label: "3 Tiers", price: 3500 },
+            { label: "4 Tiers", price: 4500 }
+        ],
+        image: "./images/wedding-cake.jpg"
+    },
+    "Birthday Cake": {
+        options: [
+            { label: "6”x3”", price: 350 },
+            { label: "6”x6” Round", price: 500 },
+            { label: "6”x6” Square", price: 800 },
+            { label: "8”x5” Round", price: 700 },
+            { label: "8”x5” Square", price: 1300 }
+        ],
+        image: "./images/birthday-cake.jpg"
+    },
+    "Cupcakes": {
+        flavors: ["Vanilla", "Chocolate", "Red Velvet", "Strawberry", "Marble"],
+        quantities: ["Box of 6", "Box of 12", "Box of 24"],
+        pricing: {
+            "Vanilla": { "Box of 6": 100, "Box of 12": 180, "Box of 24": 300 },
+            "Chocolate": { "Box of 6": 120, "Box of 12": 200, "Box of 24": 320 },
+            "Red Velvet": { "Box of 6": 140, "Box of 12": 220, "Box of 24": 340 },
+            "Strawberry": { "Box of 6": 140, "Box of 12": 220, "Box of 24": 340 },
+            "Marble": { "Box of 6": 240, "Box of 12": null, "Box of 24": null }
+        },
+        image: "./images/cupcake.jpg"
+    }
+};
 
 function updateCart() {
     let cartContainer = document.querySelector('.cart-items');
@@ -16,11 +48,12 @@ function updateCart() {
         total += item.price * item.quantity;
         let box = document.createElement('div');
         box.classList.add('box');
+        let details = item.details ? ` (${item.details})` : '';
         box.innerHTML = `
             <i class="fas fa-trash" onclick="removeItem(${index})"></i>
             <img src="${item.image}" alt="${item.name}">
             <div class="content">
-                <h3>${item.name}</h3>
+                <h3>${item.name}${details}</h3>
                 <span class="price">GHS${item.price * item.quantity}/-</span>
                 <div class="quantity">
                     <button onclick="updateQuantity(${index}, -1)">-</button>
@@ -90,7 +123,6 @@ function updateCheckoutSummary() {
         console.log('Order summary container not found');
         return;
     }
-    console.log('Cart items:', cartItems); // Debug cart items
     summaryContainer.innerHTML = '';
 
     if (cartItems.length === 0) {
@@ -106,8 +138,9 @@ function updateCheckoutSummary() {
         subtotal += item.price * item.quantity;
         let itemDiv = document.createElement('div');
         itemDiv.classList.add('item');
+        let details = item.details ? ` (${item.details})` : '';
         itemDiv.innerHTML = `
-            <span>${item.name} (x${item.quantity})</span>
+            <span>${item.name}${details} (x${item.quantity})</span>
             <span>GHS${item.price * item.quantity}/-</span>
         `;
         summaryContainer.appendChild(itemDiv);
@@ -156,31 +189,93 @@ function placeOrder() {
     }, 1500);
 }
 
+function openModal(productType) {
+    currentProduct = { name: productType, image: pricingData[productType].image, price: 0, details: '' };
+    const modal = document.querySelector('#custom-product-modal');
+    const modalTitle = document.querySelector('#modal-title');
+    const modalOptions = document.querySelector('#modal-options');
+    const modalPrice = document.querySelector('#modal-price');
+    const addToCartBtn = document.querySelector('#modal-add-to-cart');
+
+    modalTitle.textContent = `Customize Your ${productType}`;
+    modalOptions.innerHTML = '';
+    modalPrice.textContent = 'GHS0/-';
+    addToCartBtn.disabled = true;
+
+    if (productType === "Wedding Cake" || productType === "Birthday Cake") {
+        const select = document.createElement('select');
+        select.id = 'tier-select';
+        select.innerHTML = '<option value="">Select Option</option>';
+        pricingData[productType].options.forEach(option => {
+            select.innerHTML += `<option value="${option.label}" data-price="${option.price}">${option.label} - GHS${option.price}</option>`;
+        });
+        modalOptions.appendChild(select);
+
+        select.onchange = () => {
+            const selectedOption = select.options[select.selectedIndex];
+            const price = selectedOption.getAttribute('data-price');
+            currentProduct.price = price ? parseInt(price) : 0;
+            currentProduct.details = selectedOption.value;
+            modalPrice.textContent = `GHS${currentProduct.price}/-`;
+            addToCartBtn.disabled = !selectedOption.value;
+        };
+    } else if (productType === "Cupcakes") {
+        const flavorSelect = document.createElement('select');
+        flavorSelect.id = 'flavor-select';
+        flavorSelect.innerHTML = '<option value="">Select Flavor</option>';
+        pricingData[productType].flavors.forEach(flavor => {
+            flavorSelect.innerHTML += `<option value="${flavor}">${flavor}</option>`;
+        });
+        modalOptions.appendChild(flavorSelect);
+
+        const quantitySelect = document.createElement('select');
+        quantitySelect.id = 'quantity-select';
+        quantitySelect.innerHTML = '<option value="">Select Quantity</option>';
+        pricingData[productType].quantities.forEach(quantity => {
+            quantitySelect.innerHTML += `<option value="${quantity}">${quantity}</option>`;
+        });
+        modalOptions.appendChild(quantitySelect);
+
+        const updatePrice = () => {
+            const flavor = flavorSelect.value;
+            const quantity = quantitySelect.value;
+            if (flavor && quantity) {
+                const price = pricingData[productType].pricing[flavor][quantity];
+                currentProduct.price = price || 0;
+                currentProduct.details = `${flavor}, ${quantity}`;
+                modalPrice.textContent = price ? `GHS${price}/-` : 'N/A';
+                addToCartBtn.disabled = !price;
+            } else {
+                currentProduct.price = 0;
+                currentProduct.details = '';
+                modalPrice.textContent = 'GHS0/-';
+                addToCartBtn.disabled = true;
+            }
+        };
+
+        flavorSelect.onchange = updatePrice;
+        quantitySelect.onchange = updatePrice;
+    }
+
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    const modal = document.querySelector('#custom-product-modal');
+    modal.classList.remove('active');
+    currentProduct = null;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing cart and checkout summary');
 
-    // Initialize event listeners
     const cartBtn = document.querySelector('#cart-btn');
     if (cartBtn) {
         cartBtn.onclick = () => {
             shoppingCart.classList.toggle('active');
-            account.classList.remove('active');
             navbar.classList.remove('active');
             updateCart();
         };
-    } else {
-        console.log('Cart button (#cart-btn) not found');
-    }
-
-    const loginBtn = document.querySelector('#login-btn');
-    if (loginBtn) {
-        loginBtn.onclick = () => {
-            account.classList.toggle('active');
-            shoppingCart.classList.remove('active');
-            navbar.classList.remove('active');
-        };
-    } else {
-        console.log('Login button (#login-btn) not found');
     }
 
     const menuBtn = document.querySelector('#menu-btn');
@@ -188,27 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         menuBtn.onclick = () => {
             navbar.classList.toggle('active');
             shoppingCart.classList.remove('active');
-            account.classList.remove('active');
         };
-    } else {
-        console.log('Menu button (#menu-btn) not found');
-    }
-
-    const searchBox = document.querySelector('#search-box');
-    if (searchBox) {
-        searchBox.oninput = (e) => {
-            let searchTerm = e.target.value.toLowerCase();
-            document.querySelectorAll('.product-slider .box').forEach(box => {
-                let itemName = box.getAttribute('data-name').toLowerCase();
-                if (searchTerm === '' || itemName.includes(searchTerm)) {
-                    box.classList.remove('hidden');
-                } else {
-                    box.classList.add('hidden');
-                }
-            });
-        };
-    } else {
-        console.log('Search box (#search-box) not found');
     }
 
     const viewMoreBtn = document.querySelector('#view-more-btn');
@@ -220,8 +295,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             viewMoreBtn.textContent = additionalProductsVisible ? 'View Less' : 'View More';
         };
-    } else {
-        console.log('View more button (#view-more-btn) not found');
     }
 
     document.querySelectorAll('.add-to-cart').forEach(button => {
@@ -240,14 +313,43 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    // Initialize cart and checkout summary
+    document.querySelectorAll('.add-to-cart-custom').forEach(button => {
+        button.onclick = () => {
+            const productType = button.getAttribute('data-type');
+            openModal(productType);
+        };
+    });
+
+    const modalCancelBtn = document.querySelector('#modal-cancel');
+    if (modalCancelBtn) {
+        modalCancelBtn.onclick = closeModal;
+    }
+
+    const modalAddToCartBtn = document.querySelector('#modal-add-to-cart');
+    if (modalAddToCartBtn) {
+        modalAddToCartBtn.onclick = () => {
+            if (currentProduct && currentProduct.price > 0) {
+                let existingItem = cartItems.find(cartItem => cartItem.name === currentProduct.name && cartItem.details === currentProduct.details);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    currentProduct.quantity = 1;
+                    cartItems.push(currentProduct);
+                }
+                localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                closeModal();
+                showPopup();
+                updateCart();
+            }
+        };
+    }
+
     updateCart();
     updateCheckoutSummary();
 });
 
 window.onscroll = () => {
     shoppingCart.classList.remove('active');
-    account.classList.remove('active');
     navbar.classList.remove('active');
 
     let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
@@ -261,16 +363,6 @@ window.onscroll = () => {
 
 var swiper = new Swiper(".product-slider", {
     loop: false,
-    spaceBetween: 20,
-    breakpoints: {
-        0: { slidesPerView: 1 },
-        768: { slidesPerView: 2 },
-        1020: { slidesPerView: 4 }
-    }
-});
-
-var swiper = new Swiper(".review-slider", {
-    loop: true,
     spaceBetween: 20,
     breakpoints: {
         0: { slidesPerView: 1 },
