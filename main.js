@@ -162,6 +162,7 @@ function updateCheckoutSummary() {
 
 function saveDetails(event) {
     event.preventDefault();
+
     let paymentDetails = document.createElement('div');
     paymentDetails.classList.add('payment-details');
     paymentDetails.innerHTML = `
@@ -171,9 +172,15 @@ function saveDetails(event) {
         <p>Expiry: 12/27</p>
         <p>Cardholder: John Doe</p>
     `;
+
     let form = document.querySelector('.billing-form');
     form.parentElement.appendChild(paymentDetails);
     form.style.display = 'none';
+
+    const placeOrderBtn = document.querySelector('.place-order');
+    if (placeOrderBtn) {
+        placeOrderBtn.classList.remove('d-none');
+    }
 }
 
 function placeOrder() {
