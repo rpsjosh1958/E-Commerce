@@ -128,8 +128,7 @@ function showSuccessPopup() {
 function updateCheckoutSummary() {
     let summaryContainer = document.querySelector('.order-summary');
     if (!summaryContainer) {
-        console.log('Order summary container not found');
-        return;
+        return; 
     }
     summaryContainer.innerHTML = '';
 
@@ -324,6 +323,8 @@ function closeModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Ensure cart items are loaded from localStorage
+    cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 
     const cartBtn = document.querySelector('#cart-btn');
     if (cartBtn) {
@@ -353,53 +354,65 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    const blogSlider = new Swiper('.blog-slider', {
-        loop: false,
-        spaceBetween: 20,
-        slidesPerView: 1,
-        autoplay: {
-            delay: 2000,
-            disableOnInteraction: false,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        breakpoints: {
-            768: {
-                slidesPerView: 2,
+    if (window.location.pathname.includes('index.html') && document.querySelector('.blog-slider')) {
+        const blogSlider = new Swiper('.blog-slider', {
+            loop: false,
+            spaceBetween: 20,
+            slidesPerView: 1,
+            autoplay: {
+                delay: 2000,
+                disableOnInteraction: false,
             },
-            1020: {
-                slidesPerView: 3,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
             },
-        },
-    });
+            breakpoints: {
+                768: {
+                    slidesPerView: 2,
+                },
+                1020: {
+                    slidesPerView: 3,
+                },
+            },
+        });
+    }
 
     const blogCards = document.querySelectorAll('.blog-card');
     const blogModal = document.querySelector('#blog-modal');
     const blogModalBody = document.querySelector('#blog-modal-body');
     const closeModalBtn = document.querySelector('.close-modal');
 
-    blogCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const blogId = card.getAttribute('data-blog-id');
-            const blogContent = document.querySelector(`#${blogId}-content`).innerHTML;
-            blogModalBody.innerHTML = blogContent;
-            blogModal.classList.add('active');
-        });
-    });
-
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', () => {
-            blogModal.classList.remove('active');
+    if (blogCards.length > 0) {
+        blogCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const blogId = card.getAttribute('data-blog-id');
+                const blogContent = document.querySelector(`#${blogId}-content`).innerHTML;
+                if (blogModalBody) {
+                    blogModalBody.innerHTML = blogContent;
+                }
+                if (blogModal) {
+                    blogModal.classList.add('active');
+                }
+            });
         });
     }
 
-    blogModal.addEventListener('click', (e) => {
-        if (e.target === blogModal) {
-            blogModal.classList.remove('active');
-        }
-    });
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            if (blogModal) {
+                blogModal.classList.remove('active');
+            }
+        });
+    }
+
+    if (blogModal) {
+        blogModal.addEventListener('click', (e) => {
+            if (e.target === blogModal) {
+                blogModal.classList.remove('active');
+            }
+        });
+    }
 
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.onclick = () => {
@@ -448,18 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    updateCart();
-    updateCheckoutSummary();
-});
-
-var swiper = new Swiper(".product-slider", {
-    loop: false,
-    spaceBetween: 20,
-    breakpoints: {
-        0: { slidesPerView: 1 },
-        768: { slidesPerView: 2 },
-        1020: { slidesPerView: 4 }
-    }
+    // Ensure the order summary is updated after the cart
+    updateCart(); // This will also call updateCheckoutSummary()
 });
 
 window.onscroll = () => {
@@ -474,13 +477,3 @@ window.onscroll = () => {
     }
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
 };
-
-var swiper = new Swiper(".product-slider", {
-    loop: false,
-    spaceBetween: 20,
-    breakpoints: {
-        0: { slidesPerView: 1 },
-        768: { slidesPerView: 2 },
-        1020: { slidesPerView: 4 }
-    }
-});
