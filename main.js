@@ -324,7 +324,6 @@ function closeModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing cart and checkout summary');
 
     const cartBtn = document.querySelector('#cart-btn');
     if (cartBtn) {
@@ -353,6 +352,54 @@ document.addEventListener('DOMContentLoaded', () => {
             viewMoreBtn.textContent = additionalProductsVisible ? 'View Less' : 'View More';
         };
     }
+
+    const blogSlider = new Swiper('.blog-slider', {
+        loop: false,
+        spaceBetween: 20,
+        slidesPerView: 1,
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        breakpoints: {
+            768: {
+                slidesPerView: 2,
+            },
+            1020: {
+                slidesPerView: 3,
+            },
+        },
+    });
+
+    const blogCards = document.querySelectorAll('.blog-card');
+    const blogModal = document.querySelector('#blog-modal');
+    const blogModalBody = document.querySelector('#blog-modal-body');
+    const closeModalBtn = document.querySelector('.close-modal');
+
+    blogCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const blogId = card.getAttribute('data-blog-id');
+            const blogContent = document.querySelector(`#${blogId}-content`).innerHTML;
+            blogModalBody.innerHTML = blogContent;
+            blogModal.classList.add('active');
+        });
+    });
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            blogModal.classList.remove('active');
+        });
+    }
+
+    blogModal.addEventListener('click', (e) => {
+        if (e.target === blogModal) {
+            blogModal.classList.remove('active');
+        }
+    });
 
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.onclick = () => {
@@ -403,6 +450,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateCart();
     updateCheckoutSummary();
+});
+
+var swiper = new Swiper(".product-slider", {
+    loop: false,
+    spaceBetween: 20,
+    breakpoints: {
+        0: { slidesPerView: 1 },
+        768: { slidesPerView: 2 },
+        1020: { slidesPerView: 4 }
+    }
 });
 
 window.onscroll = () => {
