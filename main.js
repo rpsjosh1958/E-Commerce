@@ -10,19 +10,19 @@ let buyerDetails = null;
 const pricingData = {
     "Wedding Cake": {
         options: [
-            { label: "2 Tiers", price: 2500 },
-            { label: "3 Tiers", price: 3500 },
-            { label: "4 Tiers", price: 4500 }
+            { label: "2 Tiers", price: 2500, image: "./images/2-tier.png" },
+            { label: "3 Tiers", price: 3500, image: "./images/3-tier.png" },
+            { label: "4 Tiers", price: 4500, image: "./images/4-tier.png" }
         ],
-        image: "./images/wedding-cake.jpg"
+        image: "./images/wedding-cake.jpg" 
     },
     "Birthday Cake": {
         options: [
-            { label: "6”x3”", price: 350 },
-            { label: "6”x6” Round", price: 500 },
-            { label: "6”x6” Square", price: 800 },
-            { label: "8”x5” Round", price: 700 },
-            { label: "8”x5” Square", price: 1300 }
+            { label: "6”x3”", price: 350, image: "./images/birthday-1.png" },
+            { label: "6”x6” Round", price: 500, image: ".images/birthday-2.png" },
+            { label: "6”x6” Square", price: 800, image: "./images/birthday-4.png" },
+            { label: "8”x5” Round", price: 700, image: "./images/birthday-3.png" },
+            { label: "8”x5” Square", price: 1300, image: "./images/birthday-5.png" }
         ],
         image: "./images/birthday-cake.jpg"
     },
@@ -34,9 +34,16 @@ const pricingData = {
             "Chocolate": { "Box of 6": 120, "Box of 12": 200, "Box of 24": 320 },
             "Red Velvet": { "Box of 6": 140, "Box of 12": 220, "Box of 24": 340 },
             "Strawberry": { "Box of 6": 140, "Box of 12": 220, "Box of 24": 340 },
-            "Marble": { "Box of 6": 240, "Box of 12": null, "Box of 24": null }
+            "Marble": { "Box of 6": 140, "Box of 12": 220, "Box of 24": 340 }
         },
-        image: "./images/cupcake.jpg"
+        images: {
+            "Vanilla": "./images/cupcake-vanilla.png",
+            "Chocolate": "./images/cupcake-chocolate.png",
+            "Red Velvet": "./images/cupcake-red-velvet.png",
+            "Strawberry": "./images/cupcake-strawberry.png",
+            "Marble": "./images/cupcake-marble.png"
+        },
+        image: "./images/cupcake.jpg" 
     }
 };
 
@@ -164,7 +171,6 @@ function updateCheckoutSummary() {
 function saveDetails(event) {
     event.preventDefault();
 
-    // Collect form data
     let form = document.querySelector('.billing-form');
     buyerDetails = {
         fullName: form.querySelector('input[placeholder="Full Name"]').value,
@@ -173,10 +179,9 @@ function saveDetails(event) {
         city: form.querySelector('input[placeholder="City"]').value,
         state: form.querySelector('input[placeholder="State"]').value,
         phoneNumber: form.querySelector('input[placeholder="Phone Number"]').value,
-        postalCode: "N/A" // Not in your form, adding as placeholder
+        postalCode: "N/A" 
     };
 
-    // Optional: Add payment details section (you can remove this if not needed)
     let paymentDetails = document.createElement('div');
     paymentDetails.classList.add('payment-details');
     paymentDetails.innerHTML = `
@@ -189,7 +194,6 @@ function saveDetails(event) {
     form.parentElement.appendChild(paymentDetails);
     form.style.display = 'none';
 
-    // Show the Place Order button
     const placeOrderBtn = document.querySelector('.place-order');
     if (placeOrderBtn) {
         placeOrderBtn.classList.remove('d-none');
@@ -197,13 +201,11 @@ function saveDetails(event) {
 }
 
 function placeOrder() {
-    // Ensure buyer details are available
     if (!buyerDetails) {
         alert('Please save your shipping details first.');
         return;
     }
 
-    // Get the order summary from cartItems
     let orderSummary = {
         items: cartItems.map(item => ({
             name: item.name,
@@ -215,28 +217,23 @@ function placeOrder() {
         total: 0
     };
 
-    // Calculate subtotal, tax, and total
     let subtotal = 0;
     orderSummary.items.forEach(item => {
         subtotal += item.price * item.quantity;
     });
-    orderSummary.tax = subtotal * 0.1; // 10% tax
+    orderSummary.tax = subtotal * 0.1; 
     orderSummary.total = subtotal + orderSummary.tax;
 
-    // Format the order summary for WhatsApp
     const orderItems = orderSummary.items.map(item => 
         `${item.name}${item.details ? ` (${item.details})` : ''} - Quantity: ${item.quantity}, Price: GHS${(item.price * item.quantity).toFixed(2)}`
     ).join('\n');
     const whatsappMessage = `Hello Fhanash Bakery,\nI would like to place an order:\n\n${orderItems}\n\nTax (10%): GHS${orderSummary.tax.toFixed(2)}\nTotal: GHS${orderSummary.total.toFixed(2)}\n\nCustomer: ${buyerDetails.fullName}\nEmail: ${buyerDetails.email}\nPhone: ${buyerDetails.phoneNumber}\nAddress: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.state}`;
 
-    // Encode the message for the URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
 
-    // Replace with your WhatsApp Business number (without the +)
-    const whatsappNumber = '233591397357'; // e.g., if your number is +12025550123, use 12025550123
+    const whatsappNumber = '233599160704';
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
 
-    // Clear the cart
     cartItems = [];
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     updateCart();
@@ -263,15 +260,17 @@ function openModal(productType) {
         select.id = 'tier-select';
         select.innerHTML = '<option value="">Select Option</option>';
         pricingData[productType].options.forEach(option => {
-            select.innerHTML += `<option value="${option.label}" data-price="${option.price}">${option.label} - GHS${option.price}</option>`;
+            select.innerHTML += `<option value="${option.label}" data-price="${option.price}" data-image="${option.image}">${option.label} - GHS${option.price}</option>`;
         });
         modalOptions.appendChild(select);
 
         select.onchange = () => {
             const selectedOption = select.options[select.selectedIndex];
             const price = selectedOption.getAttribute('data-price');
+            const image = selectedOption.getAttribute('data-image');
             currentProduct.price = price ? parseInt(price) : 0;
             currentProduct.details = selectedOption.value;
+            currentProduct.image = image || pricingData[productType].image; 
             modalPrice.textContent = `GHS${currentProduct.price}/-`;
             addToCartBtn.disabled = !selectedOption.value;
         };
@@ -299,11 +298,13 @@ function openModal(productType) {
                 const price = pricingData[productType].pricing[flavor][quantity];
                 currentProduct.price = price || 0;
                 currentProduct.details = `${flavor}, ${quantity}`;
+                currentProduct.image = pricingData[productType].images[flavor] || pricingData[productType].image; // Use flavor-specific image
                 modalPrice.textContent = price ? `GHS${price}/-` : 'N/A';
                 addToCartBtn.disabled = !price;
             } else {
                 currentProduct.price = 0;
                 currentProduct.details = '';
+                currentProduct.image = pricingData[productType].image;
                 modalPrice.textContent = 'GHS0/-';
                 addToCartBtn.disabled = true;
             }
