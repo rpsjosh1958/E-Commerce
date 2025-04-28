@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
         spaceBetween: 20,
         slidesPerView: 1,
         autoplay: {
-            delay: 3000,
+            delay: 2000,
             disableOnInteraction: false,
         },
         navigation: {
