@@ -5,6 +5,7 @@ let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 let lastScrollTop = 0;
 let additionalProductsVisible = false;
 let currentProduct = null;
+let buyerDetails = null;
 
 const pricingData = {
     "Wedding Cake": {
@@ -163,20 +164,32 @@ function updateCheckoutSummary() {
 function saveDetails(event) {
     event.preventDefault();
 
+    // Collect form data
+    let form = document.querySelector('.billing-form');
+    buyerDetails = {
+        fullName: form.querySelector('input[placeholder="Full Name"]').value,
+        email: form.querySelector('input[placeholder="Email"]').value,
+        streetAddress: form.querySelector('input[placeholder="Street Address"]').value,
+        city: form.querySelector('input[placeholder="City"]').value,
+        state: form.querySelector('input[placeholder="State"]').value,
+        phoneNumber: form.querySelector('input[placeholder="Phone Number"]').value,
+        postalCode: "N/A" // Not in your form, adding as placeholder
+    };
+
+    // Optional: Add payment details section (you can remove this if not needed)
     let paymentDetails = document.createElement('div');
     paymentDetails.classList.add('payment-details');
     paymentDetails.innerHTML = `
-        <h3>Payment Details</h3>
-        <p>Payment Type: Credit Card</p>
-        <p>Card Number: **** **** **** 1234</p>
-        <p>Expiry: 12/27</p>
-        <p>Cardholder: John Doe</p>
+        <h3>Shipping Details Saved</h3>
+        <p>Name: ${buyerDetails.fullName}</p>
+        <p>Email: ${buyerDetails.email}</p>
+        <p>Address: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.state}</p>
+        <p>Phone: ${buyerDetails.phoneNumber}</p>
     `;
-
-    let form = document.querySelector('.billing-form');
     form.parentElement.appendChild(paymentDetails);
     form.style.display = 'none';
 
+    // Show the Place Order button
     const placeOrderBtn = document.querySelector('.place-order');
     if (placeOrderBtn) {
         placeOrderBtn.classList.remove('d-none');
@@ -184,16 +197,52 @@ function saveDetails(event) {
 }
 
 function placeOrder() {
-    let button = document.querySelector('.place-order');
-    button.classList.add('loading');
-    button.disabled = true;
-    setTimeout(() => {
-        button.classList.remove('loading');
-        button.disabled = false;
-        cartItems = [];
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
-        showSuccessPopup();
-    }, 1500);
+    // Ensure buyer details are available
+    if (!buyerDetails) {
+        alert('Please save your shipping details first.');
+        return;
+    }
+
+    // Get the order summary from cartItems
+    let orderSummary = {
+        items: cartItems.map(item => ({
+            name: item.name,
+            details: item.details || '',
+            quantity: item.quantity,
+            price: item.price
+        })),
+        tax: 0,
+        total: 0
+    };
+
+    // Calculate subtotal, tax, and total
+    let subtotal = 0;
+    orderSummary.items.forEach(item => {
+        subtotal += item.price * item.quantity;
+    });
+    orderSummary.tax = subtotal * 0.1; // 10% tax
+    orderSummary.total = subtotal + orderSummary.tax;
+
+    // Format the order summary for WhatsApp
+    const orderItems = orderSummary.items.map(item => 
+        `${item.name}${item.details ? ` (${item.details})` : ''} - Quantity: ${item.quantity}, Price: GHS${(item.price * item.quantity).toFixed(2)}`
+    ).join('\n');
+    const whatsappMessage = `Hello Fhanash Bakery,\nI would like to place an order:\n\n${orderItems}\n\nTax (10%): GHS${orderSummary.tax.toFixed(2)}\nTotal: GHS${orderSummary.total.toFixed(2)}\n\nCustomer: ${buyerDetails.fullName}\nEmail: ${buyerDetails.email}\nPhone: ${buyerDetails.phoneNumber}\nAddress: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.state}`;
+
+    // Encode the message for the URL
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+
+    // Replace with your WhatsApp Business number (without the +)
+    const whatsappNumber = '233591397357'; // e.g., if your number is +12025550123, use 12025550123
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+
+    // Clear the cart
+    cartItems = [];
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    updateCart();
+
+    alert('Order submitted! You will be redirected to WhatsApp to confirm your order.');
+    window.location.href = whatsappUrl;
 }
 
 function openModal(productType) {
