@@ -965,6 +965,10 @@ a.btn:hover, input.btn:hover, button.btn:hover {
     background-image: url('/images/birthday-4.png');
 }
 
+.blog .blog-card-5 {
+    background-image: url('/images/birthday-5.png');
+}
+
 .blog .swiper-button-prev,
 .blog .swiper-button-next {
     color: var(--orange);
