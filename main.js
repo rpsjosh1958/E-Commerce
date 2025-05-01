@@ -75,9 +75,11 @@ function updateCartTotal() {
 
 function updateCart() {
     const cartContainer = getElement('.cart-items');
-    cartContainer.innerHTML = cartItems.map((item, index) => renderCartItem(item, index)).join('');
-    updateCartTotal();
-    updateCheckoutSummary();
+    if (cartContainer) {
+        cartContainer.innerHTML = cartItems.map((item, index) => renderCartItem(item, index)).join('');
+        updateCartTotal();
+        updateCheckoutSummary();
+    }
 }
 
 function removeCartItem(index) {
@@ -98,23 +100,25 @@ function updateCartQuantity(index, change) {
 // Popup Management
 function showPopup() {
     const popup = getElement('#cart-popup');
-    popup.classList.add('active');
-    setTimeout(() => popup.classList.remove('active'), 2000);
+    if (popup) {
+        popup.classList.add('active');
+        setTimeout(() => popup.classList.remove('active'), 2000);
+    }
 }
 
 function showSuccessPopup() {
     const popup = document.createElement('div');
     popup.classList.add('popup', 'success');
     popup.innerHTML = `
-        <i class="fas fa-check-circle"></i>
-        <span>Order placed successfully!</span>
+        <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
+        <span>Placing Order... Please wait</span>
     `;
     document.body.appendChild(popup);
     popup.classList.add('active');
     setTimeout(() => {
         popup.classList.remove('active');
         document.body.removeChild(popup);
-        window.location.href = './index.html';
+        window.location.href = whatsappUrl;
     }, 2000);
 }
 
@@ -154,36 +158,74 @@ function updateCheckoutSummary() {
 }
 
 function saveShippingDetails(event) {
-    event.preventDefault();
-    const form = getElement('#billing-form');
-    buyerDetails = {
-        fullName: form.querySelector('input[placeholder="Full Name"]').value,
-        email: form.querySelector('input[placeholder="Email"]').value,
-        streetAddress: form.querySelector('input[placeholder="Street Address"]').value,
-        city: form.querySelector('input[placeholder="City"]').value,
-        state: form.querySelector('input[placeholder="State"]').value,
-        phoneNumber: form.querySelector('input[placeholder="Phone Number"]').value,
-        postalCode: "N/A"
-    };
+    event.preventDefault(); // Prevent form submission and page reload
 
-    const paymentDetails = document.createElement('div');
-    paymentDetails.classList.add('payment-details');
-    paymentDetails.innerHTML = `
-        <h3>Shipping Details Saved</h3>
-        <p>Name: ${buyerDetails.fullName}</p>
-        <p>Email: ${buyerDetails.email}</p>
-        <p>Address: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.state}</p>
-        <p>Phone: ${buyerDetails.phoneNumber}</p>
-    `;
-    form.parentElement.appendChild(paymentDetails);
-    form.style.display = 'none';
+    try {
+        const form = getElement('#billing-form');
+        if (!form) {
+            console.error('Billing form not found');
+            return;
+        }
 
-    getElement('#place-order-btn').classList.remove('d-none');
+        // Retrieve input values
+        const fullNameInput = form.querySelector('input[placeholder="Full Name"]');
+        const emailInput = form.querySelector('input[placeholder="Email"]');
+        const streetAddressInput = form.querySelector('input[placeholder="Street Address"]');
+        const cityInput = form.querySelector('input[placeholder="City"]');
+        const regionInput = form.querySelector('input[placeholder="Region"]');
+        const phoneNumberInput = form.querySelector('input[placeholder="Phone Number"]');
+
+        // Validate inputs
+        if (!fullNameInput || !emailInput || !streetAddressInput || !cityInput || !regionInput || !phoneNumberInput) {
+            console.error('One or more form inputs not found');
+            alert('Please ensure all form fields are present.');
+            return;
+        }
+
+        buyerDetails = {
+            fullName: fullNameInput.value,
+            email: emailInput.value,
+            streetAddress: streetAddressInput.value,
+            city: cityInput.value,
+            region: regionInput.value, // Changed from 'state' to 'region'
+            phoneNumber: phoneNumberInput.value,
+            postalCode: "N/A"
+        };
+
+        // Create and display payment details
+        const paymentDetails = document.createElement('div');
+        paymentDetails.classList.add('payment-details');
+        paymentDetails.innerHTML = `
+            <h3>Shipping Details Saved</h3>
+            <p>Name: ${buyerDetails.fullName}</p>
+            <p>Email: ${buyerDetails.email}</p>
+            <p>Address: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.region}</p>
+            <p>Phone: ${buyerDetails.phoneNumber}</p>
+        `;
+        form.parentElement.appendChild(paymentDetails);
+        form.style.display = 'none';
+
+        // Show the Place Order button
+        const placeOrderBtn = getElement('#place-order-btn');
+        if (placeOrderBtn) {
+            placeOrderBtn.classList.remove('d-none');
+        } else {
+            console.error('Place Order button not found');
+        }
+    } catch (error) {
+        console.error('Error in saveShippingDetails:', error);
+        alert('An error occurred while saving your details. Please try again.');
+    }
 }
 
 function placeOrder() {
     if (!buyerDetails) {
         alert('Please save your shipping details first.');
+        return;
+    }
+
+    if (cartItems.length === 0) {
+        alert('Your cart is empty. Please add items before placing an order.');
         return;
     }
 
@@ -205,7 +247,7 @@ function placeOrder() {
     const orderItems = orderSummary.items.map(item =>
         `${item.name}${item.details ? ` (${item.details})` : ''} - Quantity: ${item.quantity}, Price: GHS${(item.price * item.quantity).toFixed(2)}`
     ).join('\n');
-    const whatsappMessage = `Hello Fhanash Bakery,\nI would like to place an order:\n\n${orderItems}\n\nTax (10%): GHS${orderSummary.tax.toFixed(2)}\nTotal: GHS${orderSummary.total.toFixed(2)}\n\nCustomer: ${buyerDetails.fullName}\nEmail: ${buyerDetails.email}\nPhone: ${buyerDetails.phoneNumber}\nAddress: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.state}`;
+    const whatsappMessage = `Hello Fhanash Bakery,\nI would like to place an order:\n\n${orderItems}\n\nTax (10%): GHS${orderSummary.tax.toFixed(2)}\nTotal: GHS${orderSummary.total.toFixed(2)}\n\nCustomer: ${buyerDetails.fullName}\nEmail: ${buyerDetails.email}\nPhone: ${buyerDetails.phoneNumber}\nAddress: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.region}`;
 
     const encodedMessage = encodeURIComponent(whatsappMessage);
     const whatsappNumber = '233599160704';
@@ -215,8 +257,10 @@ function placeOrder() {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     updateCart();
 
-    alert('Order submitted! You will be redirected to WhatsApp to confirm your order.');
-    window.location.href = whatsappUrl;
+    showSuccessPopup();
+    setTimeout(() => {
+        window.location.href = whatsappUrl;
+    }, 2000);
 }
 
 // Modal Management
@@ -253,6 +297,8 @@ function createModalOptions(productType, modalOptions) {
 function openModal(productType) {
     currentProduct = { name: productType, image: pricingData[productType].image, price: 0, details: '' };
     const modal = getElement('#custom-product-modal');
+    if (!modal) return; // Skip if modal is not present (e.g., on checkout page)
+
     const modalTitle = getElement('#modal-title');
     const modalOptions = getElement('#modal-options');
     const modalPrice = getElement('#modal-price');
@@ -303,35 +349,42 @@ function openModal(productType) {
 }
 
 function closeModal() {
-    getElement('#custom-product-modal').classList.remove('active');
-    currentProduct = null;
+    const modal = getElement('#custom-product-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        currentProduct = null;
+    }
 }
 
 // Blog Management
 function initializeBlogSlider() {
-    if (getElement('.blog-slider')) {
-        new Swiper('.blog-slider', {
-            loop: false,
-            spaceBetween: 20,
-            slidesPerView: 1,
-            autoplay: {
-                delay: 3000,
-                disableOnInteraction: false,
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            breakpoints: {
-                768: { slidesPerView: 2 },
-                1020: { slidesPerView: 3 },
-            },
-        });
+    if (typeof Swiper === 'undefined' || !getElement('.blog-slider')) {
+        return; // Skip if Swiper is not loaded or slider is not present
     }
+
+    new Swiper('.blog-slider', {
+        loop: false,
+        spaceBetween: 20,
+        slidesPerView: 1,
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        breakpoints: {
+            768: { slidesPerView: 2 },
+            1020: { slidesPerView: 3 },
+        },
+    });
 }
 
 function initializeBlogModal() {
     const blogCards = document.querySelectorAll('.blog-card');
+    if (blogCards.length === 0) return; // Skip if no blog cards present
+
     const blogModal = getElement('#blog-modal');
     const blogModalBody = getElement('#blog-modal-body');
     const closeModalBtn = getElement('.close-modal');
@@ -339,12 +392,15 @@ function initializeBlogModal() {
     blogCards.forEach(card => {
         card.addEventListener('click', () => {
             const blogId = card.getAttribute('data-blog-id');
-            blogModalBody.innerHTML = getElement(`#${blogId}-content`).innerHTML;
-            blogModal.classList.add('active');
+            const contentElement = getElement(`#${blogId}-content`);
+            if (contentElement && blogModalBody && blogModal) {
+                blogModalBody.innerHTML = contentElement.innerHTML;
+                blogModal.classList.add('active');
+            }
         });
     });
 
-    if (closeModalBtn) {
+    if (closeModalBtn && blogModal) {
         closeModalBtn.addEventListener('click', () => blogModal.classList.remove('active'));
     }
 
@@ -361,58 +417,91 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCart();
 
     // Header interactions
-    getElement('#cart-btn').addEventListener('click', () => {
-        getElement('.shopping-cart').classList.toggle('active');
-        getElement('.navbar').classList.remove('active');
-        updateCart();
-    });
+    const cartBtn = getElement('#cart-btn');
+    if (cartBtn) {
+        cartBtn.addEventListener('click', () => {
+            const shoppingCart = getElement('.shopping-cart');
+            const navbar = getElement('.navbar');
+            if (shoppingCart && navbar) {
+                shoppingCart.classList.toggle('active');
+                navbar.classList.remove('active');
+                updateCart();
+            }
+        });
+    }
 
-    getElement('#menu-btn').addEventListener('click', () => {
-        getElement('.navbar').classList.toggle('active');
-        getElement('.shopping-cart').classList.remove('active');
-    });
+    const menuBtn = getElement('#menu-btn');
+    if (menuBtn) {
+        menuBtn.addEventListener('click', () => {
+            const navbar = getElement('.navbar');
+            const shoppingCart = getElement('.shopping-cart');
+            if (navbar && shoppingCart) {
+                navbar.classList.toggle('active');
+                shoppingCart.classList.remove('active');
+            }
+        });
+    }
 
     // Cart interactions
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', () => {
-            const item = JSON.parse(button.getAttribute('data-item'));
-            const existingItem = cartItems.find(cartItem => cartItem.name === item.name);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                item.quantity = 1;
-                cartItems.push(item);
-            }
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            showPopup();
-            updateCart();
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    if (addToCartButtons.length > 0) {
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const item = JSON.parse(button.getAttribute('data-item'));
+                const existingItem = cartItems.find(cartItem => cartItem.name === item.name && cartItem.details === item.details);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    item.quantity = 1;
+                    cartItems.push(item);
+                }
+                localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                showPopup();
+                updateCart();
+            });
         });
-    });
+    }
 
-    document.querySelectorAll('.add-to-cart-custom').forEach(button => {
-        button.addEventListener('click', () => openModal(button.getAttribute('data-type')));
-    });
+    const addToCartCustomButtons = document.querySelectorAll('.add-to-cart-custom');
+    if (addToCartCustomButtons.length > 0) {
+        addToCartCustomButtons.forEach(button => {
+            button.addEventListener('click', () => openModal(button.getAttribute('data-type')));
+        });
+    }
 
     // Modal interactions
-    getElement('#modal-cancel').addEventListener('click', closeModal);
-    getElement('#modal-add-to-cart').addEventListener('click', () => {
-        if (currentProduct && currentProduct.price > 0) {
-            const existingItem = cartItems.find(cartItem => cartItem.name === currentProduct.name && cartItem.details === currentProduct.details);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                currentProduct.quantity = 1;
-                cartItems.push(currentProduct);
+    const modalCancel = getElement('#modal-cancel');
+    if (modalCancel) {
+        modalCancel.addEventListener('click', closeModal);
+    }
+
+    const modalAddToCart = getElement('#modal-add-to-cart');
+    if (modalAddToCart) {
+        modalAddToCart.addEventListener('click', () => {
+            if (currentProduct && currentProduct.price > 0) {
+                const existingItem = cartItems.find(cartItem => cartItem.name === currentProduct.name && cartItem.details === currentProduct.details);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    currentProduct.quantity = 1;
+                    cartItems.push(currentProduct);
+                }
+                localStorage.setItem('cartItems', JSON.stringify(cartItems));
+                closeModal();
+                showPopup();
+                updateCart();
             }
-            localStorage.setItem('cartItems', JSON.stringify(cartItems));
-            closeModal();
-            showPopup();
-            updateCart();
-        }
-    });
+        });
+    }
 
     // Popup interaction
-    getElement('#close-popup-btn').addEventListener('click', () => getElement('#cart-popup').classList.remove('active'));
+    const closePopupBtn = getElement('#close-popup-btn');
+    if (closePopupBtn) {
+        closePopupBtn.addEventListener('click', () => {
+            const popup = getElement('#cart-popup');
+            if (popup) popup.classList.remove('active');
+        });
+    }
 
     // Checkout interactions
     const billingForm = getElement('#billing-form');
@@ -421,7 +510,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const placeOrderButtons = document.querySelectorAll('#place-order-btn, #place-order-cart-btn');
-    placeOrderButtons.forEach(button => button.addEventListener('click', placeOrder));
+    if (placeOrderButtons.length > 0) {
+        placeOrderButtons.forEach(button => button.addEventListener('click', placeOrder));
+    }
 
     // Blog initialization
     initializeBlogSlider();
@@ -430,10 +521,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Scroll behavior
 window.onscroll = () => {
-    getElement('.shopping-cart').classList.remove('active');
-    getElement('.navbar').classList.remove('active');
+    const shoppingCart = getElement('.shopping-cart');
+    const navbar = getElement('.navbar');
+    const header = getElement('.header');
+
+    if (shoppingCart) shoppingCart.classList.remove('active');
+    if (navbar) navbar.classList.remove('active');
 
     const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-    getElement('.header').classList.toggle('hidden', currentScroll > lastScrollTop);
+    if (header) {
+        header.classList.toggle('hidden', currentScroll > lastScrollTop);
+    }
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
 };
