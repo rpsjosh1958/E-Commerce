@@ -890,7 +890,6 @@ a.btn:hover, input.btn:hover, button.btn:hover {
     }
 }
 
-/* Blog Section */
 .blog {
     padding-top: 5rem;
     position: relative;
@@ -902,13 +901,31 @@ a.btn:hover, input.btn:hover, button.btn:hover {
 }
 
 .blog .blog-card {
-    background: #fff;
+    position: relative;
     border-radius: 0.5rem;
     text-align: center;
     padding: 2rem;
     box-shadow: var(--box-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    height: 20rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.blog .blog-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+    z-index: 1;
 }
 
 .blog .blog-card:hover {
@@ -916,18 +933,38 @@ a.btn:hover, input.btn:hover, button.btn:hover {
     box-shadow: 0 0.7rem 1.5rem rgba(0,0,0,.15);
 }
 
+.blog .blog-card .content {
+    position: relative;
+    z-index: 2;
+}
+
 .blog .blog-card .content h3 {
     font-size: 2rem;
-    color: var(--black);
+    color: #fff;
     margin-bottom: 1rem;
 }
 
 .blog .blog-card .content .date {
     font-size: 1.4rem;
-    color: var(--light-color);
+    color: #ddd;
 }
 
-/* Swiper Navigation Arrows */
+.blog .blog-card-1 {
+    background-image: url('/images/birthday-1.png');
+}
+
+.blog .blog-card-2 {
+    background-image: url('/images/birthday-2.png');
+}
+
+.blog .blog-card-3 {
+    background-image: url('/images/birthday-3.png');
+}
+
+.blog .blog-card-4 {
+    background-image: url('/images/birthday-4.png');
+}
+
 .blog .swiper-button-prev,
 .blog .swiper-button-next {
     color: var(--orange);
@@ -950,7 +987,6 @@ a.btn:hover, input.btn:hover, button.btn:hover {
     font-size: 2rem;
 }
 
-/* Blog Modal */
 .blog-modal {
     position: fixed;
     top: 0;
@@ -1019,73 +1055,6 @@ a.btn:hover, input.btn:hover, button.btn:hover {
 
 .blog-modal-content p strong {
     color: var(--orange);
-}
-
-.blog .blog-card {
-    position: relative;
-    border-radius: 0.5rem;
-    text-align: center;
-    padding: 2rem;
-    box-shadow: var(--box-shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-    background-size: cover;
-    background-position: center;
-    height: 20rem; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Dark Overlay */
-.blog .blog-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Dark overlay with 50% opacity */
-    border-radius: 0.5rem;
-    z-index: 1;
-}
-
-.blog .blog-card:hover {
-    transform: translateY(-0.5rem);
-    box-shadow: 0 0.7rem 1.5rem rgba(0,0,0,.15);
-}
-
-.blog .blog-card .content {
-    position: relative;
-    z-index: 2; /* Ensure content is above the overlay */
-}
-
-.blog .blog-card .content h3 {
-    font-size: 2rem;
-    color: #fff; /* White text for contrast */
-    margin-bottom: 1rem;
-}
-
-.blog .blog-card .content .date {
-    font-size: 1.4rem;
-    color: #ddd; /* Light gray for the date */
-}
-
-/* Specific Background Images */
-.blog .blog-card-1 {
-    background-image: url('./images/birthday-1.png');
-}
-
-.blog .blog-card-2 {
-    background-image: url('./images/birthday-2.png');
-}
-
-.blog .blog-card-3 {
-    background-image: url('./images/birthday-3.png');
-}
-
-.blog .blog-card-4 {
-    background-image: url('./images/birthday-4.png');
 }
 
 /* Responsive Adjustments */

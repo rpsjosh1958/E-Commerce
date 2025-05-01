@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="./style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <title>Fhanash Bakery</title>
+    <title>Fhanash Bakery - Freshly Baked Cakes and Pastries</title>
 </head>
 <body>
     <header class="header">
@@ -31,7 +32,7 @@
         </div>
         <div class="popup" id="cart-popup">
             <span>Item added to cart!</span>
-            <button class="btn" onclick="closePopup()">OK</button>
+            <button class="btn" id="close-popup-btn">OK</button>
         </div>
     </header>
 
@@ -74,12 +75,11 @@
     <section class="menu" id="menu">
         <h1 class="heading">Our <span>Menu</span></h1>
         <div class="pricing">
-   
             <h3 class="subheading centered">Wedding Cakes</h3>
             <div class="cake-images">
                 <div class="cake-image">
                     <img src="./images/2-tier.png" alt="2 Tiers">
-                    <p>2 Tiers</p>
+                    <paites>2 Tiers</p>
                     <p class="price">GHC2500</p>
                 </div>
                 <div class="cake-image">
@@ -94,7 +94,7 @@
                 </div>
             </div>
             <div class="centered-button">
-            <button class="btn add-to-cart-custom" data-type="Wedding Cake">Get a Wedding Cake</button>
+                <button class="btn add-to-cart-custom" data-type="Wedding Cake">Get a Wedding Cake</button>
             </div>
 
             <h3 class="subheading centered">Birthday Cakes</h3>
@@ -126,7 +126,7 @@
                 </div>
             </div>
             <div class="centered-button">
-            <button class="btn add-to-cart-custom" data-type="Birthday Cake">Get a Birthday Cake</button>
+                <button class="btn add-to-cart-custom" data-type="Birthday Cake">Get a Birthday Cake</button>
             </div>
 
             <h3 class="subheading centered">Cupcakes</h3>
@@ -230,12 +230,10 @@
         </div>
     </section>
 
-    <!-- Blog Section -->
     <section class="blog" id="blog">
         <h1 class="heading">Our <span>Blog</span></h1>
         <div class="blog-slider swiper">
             <div class="swiper-wrapper">
-                <!-- Blog Post 1 -->
                 <div class="swiper-slide blog-card blog-card-1" data-blog-id="blog1">
                     <div class="content">
                         <h3>Sweet Mornings at Fhanash Bakery</h3>
@@ -250,37 +248,32 @@
                 </div>
                 <div class="swiper-slide blog-card blog-card-3" data-blog-id="blog3">
                     <div class="content">
-                        <h3>New Blog Post Title</h3>
-                        <p class="date">May 1, 2025</p>
+                        <h3>Sweet Magic of Fhanash Bakery</h3>
+                        <p class="date">May 2, 2025</p>
                     </div>
                 </div>
                 <div class="swiper-slide blog-card blog-card-4" data-blog-id="blog4">
                     <div class="content">
-                        <h3>New Blog Post Title</h3>
-                        <p class="date">May 1, 2025</p>
+                        <h3>A Haven for Pastry Lovers</h3>
+                        <p class="date">May 3, 2025</p>
                     </div>
                 </div>
             </div>
-            <!-- Navigation Arrows -->
             <div class="swiper-button-prev"></div>
             <div class="swiper-button-next"></div>
         </div>
 
-        <!-- Blog Modal -->
         <div class="blog-modal" id="blog-modal">
             <div class="blog-modal-content">
-                <span class="close-modal">&times;</span>
-                <div id="blog-modal-body">
-                    <!-- Blog content will be dynamically inserted here -->
-                </div>
+                <span class="close-modal">×</span>
+                <div id="blog-modal-body"></div>
             </div>
         </div>
 
-        <!-- Hidden Blog Content (for JavaScript to access) -->
         <div class="blog-content" style="display: none;">
             <div id="blog1-content">
                 <p class="date">April 28, 2025</p>
-                <h3>Sweet Mornings at Fhanash Bakery.</h3>
+                <h3>Sweet Mornings at Fhanash Bakery</h3>
                 <p>Wake up to freshly baked treats made with love and local ingredients! From vanilla cupcakes to flaky meat pies, our bakery is dedicated to making your day sweeter.</p>
                 <h4>Try Our Marble Cupcakes</h4>
                 <p>Made with rich, swirled goodness and topped with hand-piped buttercream, these cupcakes are a delight. Pair with a latte or iced tea for the perfect treat!</p>
@@ -294,42 +287,34 @@
                 <h3>Explore the Delightful World of FHANASH Bakery</h3>
                 <p>If you're searching for a bakery that embodies passion, creativity, and quality in every bite, look no further than FHANASH Bakery. Known for its delicious pastries, cakes, and bread, FHANASH has become a beloved spot for foodies and dessert lovers alike</p>
                 <p>At FHANASH Bakery, simple—great baking starts with great ingredients. The bakery prides itself on using the finest, freshest materials to ensure every creation is a masterpiece. Whether you're craving a soft, buttery croissant, a decadent chocolate cake, or hearty artisanal bread, FHANASH promises a treat to satisfy every palate.</p>
-                <p>What sets FHANASH apart is the love and
-                    care baked into each product. The team
-                    behind FHANASH combines expertise with
-                    innovation, consistently crafting delightful
-                    new flavors while honoring timeless
-                    classics. It's a place where tradition meets
-                    creativity, making every visit a unique
-                    experience.</p>
-                <p>So whether you're stopping by for your
-                    morning pastry or picking up a custom
-                    cake for a special occasion, FHANASH
-                    Bakery is the perfect destination to add a
-                    little sweetness to your day.
-                    Taste the <strong>FHANASH</strong> magic today !!! </p>
+                <p>What sets FHANASH apart is the love and care baked into each product. The team behind FHANASH combines expertise with innovation, consistently crafting delightful new flavors while honoring timeless classics. It's a place where tradition meets creativity, making every visit a unique experience.</p>
+                <p>So whether you're stopping by for your morning pastry or picking up a custom cake for a special occasion, FHANASH Bakery is the perfect destination to add a little sweetness to your day. Taste the <strong>FHANASH</strong> magic today !!! </p>
             </div>
             <div id="blog3-content">
-                <p class="date">April 28, 2025</p>
-                <h3>Sweet Mornings at Fhanash Bakery</h3>
-                <p>Wake up to freshly baked treats made with love and local ingredients! From vanilla cupcakes to flaky meat pies, our bakery is dedicated to making your day sweeter.</p>
-                <h4>Try Our Marble Cupcakes</h4>
-                <p>Made with rich, swirled goodness and topped with hand-piped buttercream, these cupcakes are a delight. Pair with a latte or iced tea for the perfect treat!</p>
-                <h4>Behind the Scenes</h4>
-                <p>Our team works hard to bring you homemade goodness. We source eggs from local farms and mill our flour in small batches.</p>
-                <h4>Visit Us!</h4>
-                <p>Swing by Fhanash Bakery or order online. Share your Fhanash moment with <strong>#FhanashFresh</strong> and tag us!</p>
+                <p class="date">May 2, 2025</p>
+                <h3>Discover the Sweet Magic of Fhanash Bakery</h3>
+                <p>Are you ready to indulge in a world of sweet delights? Look no further than Fhanash Bakery, where passion meets creativity in every delicious bite. This beloved bakery has captured the hearts of foodies and dessert lovers alike with its mouthwatering pastries, cakes, and bread.</p>
+                <h4>Order Online:</h4>
+                <p>Get your favorite baked goods delivered.</p>
+                <h4>Share Your Moment:</h4>
+                <p>Tag us <strong>#FhanashFresh</strong> on social media with your Fhanash moments!</p>
             </div>
             <div id="blog4-content">
-                <p class="date">April 28, 2025</p>
-                <h3>Sweet Mornings at Fhanash Bakery</h3>
-                <p>Wake up to freshly baked treats made with love and local ingredients! From vanilla cupcakes to flaky meat pies, our bakery is dedicated to making your day sweeter.</p>
-                <h4>Try Our Marble Cupcakes</h4>
-                <p>Made with rich, swirled goodness and topped with hand-piped buttercream, these cupcakes are a delight. Pair with a latte or iced tea for the perfect treat!</p>
-                <h4>Behind the Scenes</h4>
-                <p>Our team works hard to bring you homemade goodness. We source eggs from local farms and mill our flour in small batches.</p>
-                <h4>Visit Us!</h4>
-                <p>Swing by Fhanash Bakery or order online. Share your Fhanash moment with <strong>#FhanashFresh</strong> and tag us!</p>
+                <p class="date">May 3, 2025</p>
+                <h3>Fhanash Bakery: A Haven for Pastry Lovers</h3>
+                <p>Tucked away in the heart of Pantang Abokobi, Fhanash bakery is a charming bakery shop that has been tantalizing taste buds with its delectable pastries, cakes, and bread for years. This family-owned bakery is a haven for anyone with a sweet tooth, offering a wide range of mouth-watering treats that are sure to satisfy any craving.</p>
+                <h4>A Passion for Baking</h4>
+                <p>At Fhanash Bakery the owners are passionate about baking, and it shows in every single item on their menu. From classic croissants and muffins to elaborate wedding cakes and custom desserts, every pastry is crafted with love and care. The bakery's commitment to using only the finest ingredients, sourced locally whenever possible, ensures that every bite is a delight for the senses.</p>
+                <h4>A Wide Range of Treats</h4>
+                <p>Fhanash Bakery offers an impressive array of sweet and savory treats, including:
+                    <p>- Freshly baked bread, perfect for sandwiches or toast</p>
+                    <p>- Flaky, buttery croissants and Danish pastries</p>
+                    <p>- Moist and decadent cakes, including birthday cakes and wedding cakes</p>
+                    <p>- Custom desserts, tailored to your specific needs</p>
+                    <p>- Artisanal pastries, such as éclairs and cream puffs</p>
+                </p>
+                <h4>A Cozy Atmosphere</h4>
+                <p>The bakery's warm and inviting atmosphere makes it the perfect spot to relax and enjoy a cup of coffee or tea with a delicious pastry. The friendly staff are always happy to offer recommendations or help you choose the perfect treat.</p>
             </div>
         </div>
     </section>
@@ -380,7 +365,7 @@
         </div>
     </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script src="./main.js"></script>
 </body>
 </html>

@@ -1,12 +1,13 @@
-let shoppingCart = document.querySelector('.shopping-cart');
-let navbar = document.querySelector('.navbar');
-let header = document.querySelector('.header');
+// Utility function to get DOM elements
+const getElement = (selector) => document.querySelector(selector);
+
+// State variables
 let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-let lastScrollTop = 0;
-let additionalProductsVisible = false;
 let currentProduct = null;
 let buyerDetails = null;
+let lastScrollTop = 0;
 
+// Product pricing data
 const pricingData = {
     "Wedding Cake": {
         options: [
@@ -14,12 +15,12 @@ const pricingData = {
             { label: "3 Tiers", price: 3500, image: "./images/3-tier.png" },
             { label: "4 Tiers", price: 4500, image: "./images/4-tier.png" }
         ],
-        image: "./images/wedding-cake.jpg" 
+        image: "./images/wedding-cake.jpg"
     },
     "Birthday Cake": {
         options: [
             { label: "6”x3”", price: 350, image: "./images/birthday-1.png" },
-            { label: "6”x6” Round", price: 500, image: ".images/birthday-2.png" },
+            { label: "6”x6” Round", price: 500, image: "./images/birthday-2.png" },
             { label: "6”x6” Square", price: 800, image: "./images/birthday-4.png" },
             { label: "8”x5” Round", price: 700, image: "./images/birthday-3.png" },
             { label: "8”x5” Square", price: 1300, image: "./images/birthday-5.png" }
@@ -43,47 +44,49 @@ const pricingData = {
             "Strawberry": "./images/cupcake-strawberry.png",
             "Marble": "./images/cupcake-marble.png"
         },
-        image: "./images/cupcake.jpg" 
+        image: "./images/cupcake.jpg"
     }
 };
 
-function updateCart() {
-    let cartContainer = document.querySelector('.cart-items');
-    cartContainer.innerHTML = '';
-    let total = 0;
-
-    cartItems.forEach((item, index) => {
-        total += item.price * item.quantity;
-        let box = document.createElement('div');
-        box.classList.add('box');
-        let details = item.details ? ` (${item.details})` : '';
-        box.innerHTML = `
-            <i class="fas fa-trash" onclick="removeItem(${index})"></i>
+// Cart Management
+function renderCartItem(item, index) {
+    const details = item.details ? ` (${item.details})` : '';
+    return `
+        <div class="box">
+            <i class="fas fa-trash" onclick="removeCartItem(${index})"></i>
             <img src="${item.image}" alt="${item.name}">
             <div class="content">
                 <h3>${item.name}${details}</h3>
                 <span class="price">GHS${item.price * item.quantity}/-</span>
                 <div class="quantity">
-                    <button onclick="updateQuantity(${index}, -1)">-</button>
+                    <button onclick="updateCartQuantity(${index}, -1)">-</button>
                     <span>Qty: ${item.quantity}</span>
-                    <button onclick="updateQuantity(${index}, 1)">+</button>
+                    <button onclick="updateCartQuantity(${index}, 1)">+</button>
                 </div>
             </div>
-        `;
-        cartContainer.appendChild(box);
-    });
+        </div>
+    `;
+}
 
-    document.querySelector('.total').textContent = `Total: GHS${total}/-`;
+function updateCartTotal() {
+    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    getElement('.total').textContent = `Total: GHS${total}/-`;
+}
+
+function updateCart() {
+    const cartContainer = getElement('.cart-items');
+    cartContainer.innerHTML = cartItems.map((item, index) => renderCartItem(item, index)).join('');
+    updateCartTotal();
     updateCheckoutSummary();
 }
 
-function removeItem(index) {
+function removeCartItem(index) {
     cartItems.splice(index, 1);
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
     updateCart();
 }
 
-function updateQuantity(index, change) {
+function updateCartQuantity(index, change) {
     cartItems[index].quantity += change;
     if (cartItems[index].quantity <= 0) {
         cartItems.splice(index, 1);
@@ -92,25 +95,15 @@ function updateQuantity(index, change) {
     updateCart();
 }
 
+// Popup Management
 function showPopup() {
-    let popup = document.querySelector('#cart-popup');
-    if (popup) {
-        popup.classList.add('active');
-        setTimeout(() => {
-            popup.classList.remove('active');
-        }, 2000);
-    }
-}
-
-function closePopup() {
-    let popup = document.querySelector('#cart-popup');
-    if (popup) {
-        popup.classList.remove('active');
-    }
+    const popup = getElement('#cart-popup');
+    popup.classList.add('active');
+    setTimeout(() => popup.classList.remove('active'), 2000);
 }
 
 function showSuccessPopup() {
-    let popup = document.createElement('div');
+    const popup = document.createElement('div');
     popup.classList.add('popup', 'success');
     popup.innerHTML = `
         <i class="fas fa-check-circle"></i>
@@ -125,52 +118,44 @@ function showSuccessPopup() {
     }, 2000);
 }
 
+// Checkout Management
 function updateCheckoutSummary() {
-    let summaryContainer = document.querySelector('.order-summary');
-    if (!summaryContainer) {
-        return; 
-    }
-    summaryContainer.innerHTML = '';
+    const summaryContainer = getElement('.order-summary');
+    if (!summaryContainer) return;
 
+    summaryContainer.innerHTML = '';
     if (cartItems.length === 0) {
-        let emptyMessage = document.createElement('div');
-        emptyMessage.classList.add('item');
-        emptyMessage.innerHTML = `<span>Your cart is empty</span>`;
-        summaryContainer.appendChild(emptyMessage);
+        summaryContainer.innerHTML = '<div class="item"><span>Your cart is empty</span></div>';
         return;
     }
 
     let subtotal = 0;
     cartItems.forEach(item => {
         subtotal += item.price * item.quantity;
-        let itemDiv = document.createElement('div');
-        itemDiv.classList.add('item');
-        let details = item.details ? ` (${item.details})` : '';
-        itemDiv.innerHTML = `
-            <span>${item.name}${details} (x${item.quantity})</span>
-            <span>GHS${item.price * item.quantity}/-</span>
+        const details = item.details ? ` (${item.details})` : '';
+        summaryContainer.innerHTML += `
+            <div class="item">
+                <span>${item.name}${details} (x${item.quantity})</span>
+                <span>GHS${item.price * item.quantity}/-</span>
+            </div>
         `;
-        summaryContainer.appendChild(itemDiv);
     });
 
-    let tax = subtotal * 0.1;
-    let total = subtotal + tax;
-
-    let taxDiv = document.createElement('div');
-    taxDiv.classList.add('tax');
-    taxDiv.innerHTML = `<span>Tax (10%)</span><span>GHS${tax.toFixed(2)}/-</span>`;
-    summaryContainer.appendChild(taxDiv);
-
-    let totalDiv = document.createElement('div');
-    totalDiv.classList.add('total');
-    totalDiv.innerHTML = `<span>Total</span><span>GHS${total.toFixed(2)}/-</span>`;
-    summaryContainer.appendChild(totalDiv);
+    const tax = subtotal * 0.1;
+    const total = subtotal + tax;
+    summaryContainer.innerHTML += `
+        <div class="tax">
+            <span>Tax (10%)</span><span>GHS${tax.toFixed(2)}/-</span>
+        </div>
+        <div class="total">
+            <span>Total</span><span>GHS${total.toFixed(2)}/-</span>
+        </div>
+    `;
 }
 
-function saveDetails(event) {
+function saveShippingDetails(event) {
     event.preventDefault();
-
-    let form = document.querySelector('.billing-form');
+    const form = getElement('#billing-form');
     buyerDetails = {
         fullName: form.querySelector('input[placeholder="Full Name"]').value,
         email: form.querySelector('input[placeholder="Email"]').value,
@@ -178,10 +163,10 @@ function saveDetails(event) {
         city: form.querySelector('input[placeholder="City"]').value,
         state: form.querySelector('input[placeholder="State"]').value,
         phoneNumber: form.querySelector('input[placeholder="Phone Number"]').value,
-        postalCode: "N/A" 
+        postalCode: "N/A"
     };
 
-    let paymentDetails = document.createElement('div');
+    const paymentDetails = document.createElement('div');
     paymentDetails.classList.add('payment-details');
     paymentDetails.innerHTML = `
         <h3>Shipping Details Saved</h3>
@@ -193,10 +178,7 @@ function saveDetails(event) {
     form.parentElement.appendChild(paymentDetails);
     form.style.display = 'none';
 
-    const placeOrderBtn = document.querySelector('.place-order');
-    if (placeOrderBtn) {
-        placeOrderBtn.classList.remove('d-none');
-    }
+    getElement('#place-order-btn').classList.remove('d-none');
 }
 
 function placeOrder() {
@@ -205,7 +187,7 @@ function placeOrder() {
         return;
     }
 
-    let orderSummary = {
+    const orderSummary = {
         items: cartItems.map(item => ({
             name: item.name,
             details: item.details || '',
@@ -216,20 +198,16 @@ function placeOrder() {
         total: 0
     };
 
-    let subtotal = 0;
-    orderSummary.items.forEach(item => {
-        subtotal += item.price * item.quantity;
-    });
-    orderSummary.tax = subtotal * 0.1; 
+    const subtotal = orderSummary.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    orderSummary.tax = subtotal * 0.1;
     orderSummary.total = subtotal + orderSummary.tax;
 
-    const orderItems = orderSummary.items.map(item => 
+    const orderItems = orderSummary.items.map(item =>
         `${item.name}${item.details ? ` (${item.details})` : ''} - Quantity: ${item.quantity}, Price: GHS${(item.price * item.quantity).toFixed(2)}`
     ).join('\n');
     const whatsappMessage = `Hello Fhanash Bakery,\nI would like to place an order:\n\n${orderItems}\n\nTax (10%): GHS${orderSummary.tax.toFixed(2)}\nTotal: GHS${orderSummary.total.toFixed(2)}\n\nCustomer: ${buyerDetails.fullName}\nEmail: ${buyerDetails.email}\nPhone: ${buyerDetails.phoneNumber}\nAddress: ${buyerDetails.streetAddress}, ${buyerDetails.city}, ${buyerDetails.state}`;
 
     const encodedMessage = encodeURIComponent(whatsappMessage);
-
     const whatsappNumber = '233599160704';
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
 
@@ -241,19 +219,8 @@ function placeOrder() {
     window.location.href = whatsappUrl;
 }
 
-function openModal(productType) {
-    currentProduct = { name: productType, image: pricingData[productType].image, price: 0, details: '' };
-    const modal = document.querySelector('#custom-product-modal');
-    const modalTitle = document.querySelector('#modal-title');
-    const modalOptions = document.querySelector('#modal-options');
-    const modalPrice = document.querySelector('#modal-price');
-    const addToCartBtn = document.querySelector('#modal-add-to-cart');
-
-    modalTitle.textContent = `Customize Your ${productType}`;
-    modalOptions.innerHTML = '';
-    modalPrice.textContent = 'GHS0/-';
-    addToCartBtn.disabled = true;
-
+// Modal Management
+function createModalOptions(productType, modalOptions) {
     if (productType === "Wedding Cake" || productType === "Birthday Cake") {
         const select = document.createElement('select');
         select.id = 'tier-select';
@@ -262,17 +229,7 @@ function openModal(productType) {
             select.innerHTML += `<option value="${option.label}" data-price="${option.price}" data-image="${option.image}">${option.label} - GHS${option.price}</option>`;
         });
         modalOptions.appendChild(select);
-
-        select.onchange = () => {
-            const selectedOption = select.options[select.selectedIndex];
-            const price = selectedOption.getAttribute('data-price');
-            const image = selectedOption.getAttribute('data-image');
-            currentProduct.price = price ? parseInt(price) : 0;
-            currentProduct.details = selectedOption.value;
-            currentProduct.image = image || pricingData[productType].image; 
-            modalPrice.textContent = `GHS${currentProduct.price}/-`;
-            addToCartBtn.disabled = !selectedOption.value;
-        };
+        return select;
     } else if (productType === "Cupcakes") {
         const flavorSelect = document.createElement('select');
         flavorSelect.id = 'flavor-select';
@@ -289,15 +246,45 @@ function openModal(productType) {
             quantitySelect.innerHTML += `<option value="${quantity}">${quantity}</option>`;
         });
         modalOptions.appendChild(quantitySelect);
+        return { flavorSelect, quantitySelect };
+    }
+}
 
+function openModal(productType) {
+    currentProduct = { name: productType, image: pricingData[productType].image, price: 0, details: '' };
+    const modal = getElement('#custom-product-modal');
+    const modalTitle = getElement('#modal-title');
+    const modalOptions = getElement('#modal-options');
+    const modalPrice = getElement('#modal-price');
+    const addToCartBtn = getElement('#modal-add-to-cart');
+
+    modalTitle.textContent = `Customize Your ${productType}`;
+    modalOptions.innerHTML = '';
+    modalPrice.textContent = 'GHS0/-';
+    addToCartBtn.disabled = true;
+
+    const selects = createModalOptions(productType, modalOptions);
+
+    if (productType === "Wedding Cake" || productType === "Birthday Cake") {
+        selects.onchange = () => {
+            const selectedOption = selects.options[selects.selectedIndex];
+            const price = selectedOption.getAttribute('data-price');
+            const image = selectedOption.getAttribute('data-image');
+            currentProduct.price = price ? parseInt(price) : 0;
+            currentProduct.details = selectedOption.value;
+            currentProduct.image = image || pricingData[productType].image;
+            modalPrice.textContent = `GHS${currentProduct.price}/-`;
+            addToCartBtn.disabled = !selectedOption.value;
+        };
+    } else if (productType === "Cupcakes") {
         const updatePrice = () => {
-            const flavor = flavorSelect.value;
-            const quantity = quantitySelect.value;
+            const flavor = selects.flavorSelect.value;
+            const quantity = selects.quantitySelect.value;
             if (flavor && quantity) {
                 const price = pricingData[productType].pricing[flavor][quantity];
                 currentProduct.price = price || 0;
                 currentProduct.details = `${flavor}, ${quantity}`;
-                currentProduct.image = pricingData[productType].images[flavor] || pricingData[productType].image; // Use flavor-specific image
+                currentProduct.image = pricingData[productType].images[flavor] || pricingData[productType].image;
                 modalPrice.textContent = price ? `GHS${price}/-` : 'N/A';
                 addToCartBtn.disabled = !price;
             } else {
@@ -308,54 +295,22 @@ function openModal(productType) {
                 addToCartBtn.disabled = true;
             }
         };
-
-        flavorSelect.onchange = updatePrice;
-        quantitySelect.onchange = updatePrice;
+        selects.flavorSelect.onchange = updatePrice;
+        selects.quantitySelect.onchange = updatePrice;
     }
 
     modal.classList.add('active');
 }
 
 function closeModal() {
-    const modal = document.querySelector('#custom-product-modal');
-    modal.classList.remove('active');
+    getElement('#custom-product-modal').classList.remove('active');
     currentProduct = null;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Ensure cart items are loaded from localStorage
-    cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-
-    const cartBtn = document.querySelector('#cart-btn');
-    if (cartBtn) {
-        cartBtn.onclick = () => {
-            shoppingCart.classList.toggle('active');
-            navbar.classList.remove('active');
-            updateCart();
-        };
-    }
-
-    const menuBtn = document.querySelector('#menu-btn');
-    if (menuBtn) {
-        menuBtn.onclick = () => {
-            navbar.classList.toggle('active');
-            shoppingCart.classList.remove('active');
-        };
-    }
-
-    const viewMoreBtn = document.querySelector('#view-more-btn');
-    if (viewMoreBtn) {
-        viewMoreBtn.onclick = () => {
-            additionalProductsVisible = !additionalProductsVisible;
-            document.querySelectorAll('.additional-product').forEach(product => {
-                product.classList.toggle('visible', additionalProductsVisible);
-            });
-            viewMoreBtn.textContent = additionalProductsVisible ? 'View Less' : 'View More';
-        };
-    }
-
-    if (window.location.pathname.includes('index.html') && document.querySelector('.blog-slider')) {
-        const blogSlider = new Swiper('.blog-slider', {
+// Blog Management
+function initializeBlogSlider() {
+    if (getElement('.blog-slider')) {
+        new Swiper('.blog-slider', {
             loop: false,
             spaceBetween: 20,
             slidesPerView: 1,
@@ -368,56 +323,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 prevEl: '.swiper-button-prev',
             },
             breakpoints: {
-                768: {
-                    slidesPerView: 2,
-                },
-                1020: {
-                    slidesPerView: 3,
-                },
+                768: { slidesPerView: 2 },
+                1020: { slidesPerView: 3 },
             },
         });
     }
+}
 
+function initializeBlogModal() {
     const blogCards = document.querySelectorAll('.blog-card');
-    const blogModal = document.querySelector('#blog-modal');
-    const blogModalBody = document.querySelector('#blog-modal-body');
-    const closeModalBtn = document.querySelector('.close-modal');
+    const blogModal = getElement('#blog-modal');
+    const blogModalBody = getElement('#blog-modal-body');
+    const closeModalBtn = getElement('.close-modal');
 
-    if (blogCards.length > 0) {
-        blogCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const blogId = card.getAttribute('data-blog-id');
-                const blogContent = document.querySelector(`#${blogId}-content`).innerHTML;
-                if (blogModalBody) {
-                    blogModalBody.innerHTML = blogContent;
-                }
-                if (blogModal) {
-                    blogModal.classList.add('active');
-                }
-            });
+    blogCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const blogId = card.getAttribute('data-blog-id');
+            blogModalBody.innerHTML = getElement(`#${blogId}-content`).innerHTML;
+            blogModal.classList.add('active');
         });
-    }
+    });
 
     if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', () => {
-            if (blogModal) {
-                blogModal.classList.remove('active');
-            }
-        });
+        closeModalBtn.addEventListener('click', () => blogModal.classList.remove('active'));
     }
 
     if (blogModal) {
         blogModal.addEventListener('click', (e) => {
-            if (e.target === blogModal) {
-                blogModal.classList.remove('active');
-            }
+            if (e.target === blogModal) blogModal.classList.remove('active');
         });
     }
+}
 
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize cart
+    updateCart();
+
+    // Header interactions
+    getElement('#cart-btn').addEventListener('click', () => {
+        getElement('.shopping-cart').classList.toggle('active');
+        getElement('.navbar').classList.remove('active');
+        updateCart();
+    });
+
+    getElement('#menu-btn').addEventListener('click', () => {
+        getElement('.navbar').classList.toggle('active');
+        getElement('.shopping-cart').classList.remove('active');
+    });
+
+    // Cart interactions
     document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.onclick = () => {
-            let item = JSON.parse(button.getAttribute('data-item'));
-            let existingItem = cartItems.find(cartItem => cartItem.name === item.name);
+        button.addEventListener('click', () => {
+            const item = JSON.parse(button.getAttribute('data-item'));
+            const existingItem = cartItems.find(cartItem => cartItem.name === item.name);
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
@@ -427,53 +386,54 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('cartItems', JSON.stringify(cartItems));
             showPopup();
             updateCart();
-        };
+        });
     });
 
     document.querySelectorAll('.add-to-cart-custom').forEach(button => {
-        button.onclick = () => {
-            const productType = button.getAttribute('data-type');
-            openModal(productType);
-        };
+        button.addEventListener('click', () => openModal(button.getAttribute('data-type')));
     });
 
-    const modalCancelBtn = document.querySelector('#modal-cancel');
-    if (modalCancelBtn) {
-        modalCancelBtn.onclick = closeModal;
-    }
-
-    const modalAddToCartBtn = document.querySelector('#modal-add-to-cart');
-    if (modalAddToCartBtn) {
-        modalAddToCartBtn.onclick = () => {
-            if (currentProduct && currentProduct.price > 0) {
-                let existingItem = cartItems.find(cartItem => cartItem.name === currentProduct.name && cartItem.details === currentProduct.details);
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                } else {
-                    currentProduct.quantity = 1;
-                    cartItems.push(currentProduct);
-                }
-                localStorage.setItem('cartItems', JSON.stringify(cartItems));
-                closeModal();
-                showPopup();
-                updateCart();
+    // Modal interactions
+    getElement('#modal-cancel').addEventListener('click', closeModal);
+    getElement('#modal-add-to-cart').addEventListener('click', () => {
+        if (currentProduct && currentProduct.price > 0) {
+            const existingItem = cartItems.find(cartItem => cartItem.name === currentProduct.name && cartItem.details === currentProduct.details);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                currentProduct.quantity = 1;
+                cartItems.push(currentProduct);
             }
-        };
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            closeModal();
+            showPopup();
+            updateCart();
+        }
+    });
+
+    // Popup interaction
+    getElement('#close-popup-btn').addEventListener('click', () => getElement('#cart-popup').classList.remove('active'));
+
+    // Checkout interactions
+    const billingForm = getElement('#billing-form');
+    if (billingForm) {
+        billingForm.addEventListener('submit', saveShippingDetails);
     }
 
-    // Ensure the order summary is updated after the cart
-    updateCart(); // This will also call updateCheckoutSummary()
+    const placeOrderButtons = document.querySelectorAll('#place-order-btn, #place-order-cart-btn');
+    placeOrderButtons.forEach(button => button.addEventListener('click', placeOrder));
+
+    // Blog initialization
+    initializeBlogSlider();
+    initializeBlogModal();
 });
 
+// Scroll behavior
 window.onscroll = () => {
-    shoppingCart.classList.remove('active');
-    navbar.classList.remove('active');
+    getElement('.shopping-cart').classList.remove('active');
+    getElement('.navbar').classList.remove('active');
 
-    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-    if (currentScroll > lastScrollTop) {
-        header.classList.add('hidden');
-    } else {
-        header.classList.remove('hidden');
-    }
+    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+    getElement('.header').classList.toggle('hidden', currentScroll > lastScrollTop);
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
 };
