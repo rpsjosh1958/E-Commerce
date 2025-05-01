@@ -315,7 +315,7 @@ function initializeBlogSlider() {
             spaceBetween: 20,
             slidesPerView: 1,
             autoplay: {
-                delay: 2000,
+                delay: 3000,
                 disableOnInteraction: false,
             },
             navigation: {
